@@ -1,0 +1,43 @@
+name: Win10Lite Rdp | Tailscale 
+
+on: 
+  workflow_dispatch:
+
+  
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cài Tailscale
+        run: |
+         sudo apt update -y
+         sudo apt install qemu-kvm cpulimit wget -y
+         sudo apt-get install qemu-kvm -y
+         sudo apt install qemu-system-x86 curl -y
+         curl -fsSL https://tailscale.com/install.sh | sh
+         sudo tailscale up
+         sudo apt-get update
+         sudo apt-get install ufw
+         sudo ufw allow 5900/tcp
+         sudo ufw allow 5900/tcp
+         sudo ufw enable
+         sudo ufw status
+      - name: Cài Win10 Lite Và Chạy 
+        run: |
+         sudo chmod 666 /dev/kvm
+         echo "Đang Tải Disk"
+         wget -O lite10.qcow2 https://bit.ly/32OIl8Y &>/dev/null &
+         while ps axg | grep -vw grep | grep -w wget > /dev/null; do sleep 1; done
+         echo "Đã Tải Disk Xong"
+         sudo apt -y install novnc python3-websockify python3-numpy &>/dev/null &
+         while ps axg | grep -vw grep | grep -w wget > /dev/null; do sleep 1; done
+         websockify -D --web=/usr/share/novnc/ 6080 localhost:5900 &>/dev/null &
+         while ps axg | grep -vw grep | grep -w wget > /dev/null; do sleep 1; done
+         echo "Đã Tải Xong Novnc 5900"
+         echo "Rdp Ip 👇"
+         tailscale ip -4
+         sudo qemu-system-x86_64 -vnc :0 -hda lite10.qcow2  -smp cores=2  -m 8192M -machine usb=on -device usb-tablet > /dev/null 2>&1
+         sleep 43210
+
+
+         
